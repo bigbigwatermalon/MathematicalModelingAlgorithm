@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 class Population:
     # 种群的设计
-    def __init__(self, size, chrom_size, cp, mp, gen_max, data):
+    def __init__(self, size, chrom_size, cp, mp, gen_max, data, gray_code=1):
         # 种群信息合
         self.x = []
         self.y = []
@@ -13,6 +13,7 @@ class Population:
         self.fitness = []  # 个体适应度集
         self.selector_probability = []  # 个体选择概率集合
         self.new_individuals = []  # 新一代个体集合
+        self.gray_code = gray_code #是否使用格雷码编码
 
         self.elitist = {'chromosome': [0, 0], 'fitness': 0, 'age': 0}  # 最佳个体的信息
 
@@ -23,7 +24,7 @@ class Population:
 
         self.generation_max = gen_max  # 种群进化的最大世代数
         self.age = 0  # 种群当前所处世代
-        self.acess_data = data #######################################
+        self.acess_data = data
         # 随机产生初始个体集，并将新一代个体、适应度、选择概率等集合以 0 值进行初始化
         v = 100
         for i in range(self.size):
@@ -31,10 +32,22 @@ class Population:
                   '0b' + self.create_bin(v) + self.create_bin(v) + self.create_bin(v)]
             print(vx[0], vx[1])
             vx = [int(vx[0], 2), int(vx[1], 2)]
+            if gray_code:
+                for i in range(2):
+                    vx[i] = int('0b'+self.gray_code_for_2(self.chromosome_size, vx[i]), 2)
             self.individuals.append(vx)
             self.new_individuals.append([0, 0])
             self.fitness.append(0)
             self.selector_probability.append(0)
+
+    def gray_code_for_2(n, x):  # 循环顺序实现，速度优势
+        list = ['0', '1']
+        for i in range(1, n):
+            left = ['0' + i for i in list]
+            right = ['1' + i for i in list[::-1]]
+            list = left + right
+        return list[x]
+###################################################################################################
     def create_bin(self, v):
         x = bin(random.randint(0, v))
         x = x[2:]
@@ -101,7 +114,7 @@ class Population:
                 error_x = pow(data[i][j] - data_predict[i][j], 2)
                 error += error_x
         return error                #均方误差最小时，这个最大
-
+###################################################################################################
     def evaluate(self):
         '''用于评估种群中的个体集合 self.individuals 中各个个体的适应度'''
         sp = self.selector_probability
